@@ -42,9 +42,11 @@ Route::middleware('auth')->group(function () {
     Route::get('packages/{order_id}/thank-you', [PackageController::class, 'thankYou'])->name('packages.thankYou');
 
     Route::get('dashboard/orders/', [PackageController::class, 'userOrders'])->name('packages.userOrders');
-    Route::get('dashboard/orders/{user_id}', [PackageController::class, 'getUserOrders'])->name('packages.data');
-    Route::put('dashboard/orders/{order}', [PackageController::class, 'update'])->name('packages.update');
+    Route::get('dashboard/orders/data', [PackageController::class, 'getUserOrders'])->name('packages.data');
 
+    Route::put('dashboard/orders/{order}', [PackageController::class, 'update'])->name('packages.update');
+    Route::get('dashboard/{order}/edit', [PackageController::class, 'edit'])->name('packages.edit');
+    Route::put('dashboard/{order}', [PackageController::class, 'update'])->name('packages.update');
 
 });
 

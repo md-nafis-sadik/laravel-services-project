@@ -13,8 +13,29 @@ class PackageController extends Controller
 {
     public function index()
     {
-        $plans = Plan::all();
-        return view('packages.index', compact('plans'));
+
+        return view('orders.index');
+    }
+
+    public function getOrders(Request $request)
+    {
+        $orders = Order::with(['user', 'plan'])->get();
+
+        return datatables()->of($orders)
+            ->addColumn('action', function($order) {
+                // Use PHP's route() helper to generate URLs
+                $editUrl = route('orders.edit', $order->id);
+                $deleteUrl = route('orders.destroy', $order->id);
+
+                // Return the action buttons as a plain string
+                return '<a href="' . $editUrl . '" class="text-blue-600">Edit</a> |
+                        <form action="' . $deleteUrl . '" method="POST" onsubmit="return confirmDelete()" class="inline">
+                            ' . csrf_field() . '
+                            ' . method_field('DELETE') . '
+                            <button type="submit" class="text-red-600">Delete</button>
+                        </form>';
+            })
+            ->make(true);
     }
 
 
@@ -111,28 +132,40 @@ class PackageController extends Controller
         return view('packages.userOrders');
     }
 
-    public function getUserOrders($user_id = null)
-    {
-        $orders = $user_id
-            ? Order::with(['user', 'plan'])->where('user_id', $user_id)->get()
-            : Order::with(['user', 'plan'])->get();
 
-        return datatables()->of($orders)
-            ->addColumn('action', function($order) {
-                // Use PHP's route() helper to generate URLs
-                $editUrl = route('packages.update', $order->id);
-                $deleteUrl = route('orders.destroy', $order->id);
+    public function getUserOrders(Request $request)
+{
+    $userId = Auth::id();
 
-                // Return the action buttons as a plain string
-                return '<a href="' . $editUrl . '" class="text-blue-600">Edit</a> |
-                        <form action="' . $deleteUrl . '" method="POST" onsubmit="return confirmDelete()" class="inline">
-                            ' . csrf_field() . '
-                            ' . method_field('DELETE') . '
-                            <button type="submit" class="text-red-600">Delete</button>
-                        </form>';
-            })
-            ->make(true);
-    }
+    $orders = Order::where('user_id', $userId)
+                   ->with(['user', 'plan'])
+                   ->get();
+
+    return datatables()->of($orders)
+        ->addColumn('action', function($order) {
+            $editUrl = route('packages.edit', $order->id);
+            $deleteUrl = route('orders.destroy', $order->id);
+
+            return '<a href="' . $editUrl . '" class="text-blue-600">Edit</a> |
+                    <form action="' . $deleteUrl . '" method="POST" onsubmit="return confirmDelete()" class="inline">
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+                        <button type="submit" class="text-red-600">Delete</button>
+                    </form>';
+        })
+        ->make(true);
+}
+
+public function edit(Order $order)
+{
+    // Fetch users and plans for the edit form
+    $plans = Plan::all();
+    return view('packages.update', compact('order',  'plans'));
+}
+
+
+
+
 
     public function update(Request $request, Order $order)
 {

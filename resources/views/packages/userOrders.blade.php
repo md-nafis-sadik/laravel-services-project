@@ -13,6 +13,7 @@
                         <h1 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">Orders</h1>
                     </div>
 
+                    <!-- Orders Table -->
                     <div class="shadow-md rounded-md overflow-x-auto">
                         <table id="orders-table" class="min-w-full table-auto w-full border-collapse">
                             <thead class="bg-gray-50 dark:bg-gray-700">
@@ -36,26 +37,28 @@
         </div>
     </div>
 
-    <!-- Include DataTables Dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#orders-table').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 ajax: {
-                    url: '{{ route('orders.data') }}', // Backend route to fetch data
+                    url: '{{ route('packages.data') }}',
                     type: 'GET',
                 },
                 columns: [
-                    { data: 'id', name: 'id' }, // SL
-                    { data: 'user.name', name: 'user.name' }, // Customer Name
-                    { data: 'plan.name', name: 'plan.name' }, // Plan
-                    { data: 'payment_status', name: 'payment_status' }, // Payment Status
-                    
+                    { data: 'id' },
+                    { data: 'user.name', name: 'user.name' },
+                    { data: 'plan.name', name: 'plan.name' },
+                    { data: 'payment_status',
+                        render: function(data) {
+                            return data.charAt(0).toUpperCase() + data.slice(1);
+                        }
+                    },
                     {
                         data: 'delivery_status',
                         render: function(data) {
@@ -76,23 +79,11 @@
                     },
                     {
                         data: 'action',
-                        name: 'action',
                         orderable: false,
-                        searchable: false,
-                        render: function(data) {
-                            return data; // Renders the HTML for actions
-                        }
+                        searchable: false
                     }
-                ],
-                order: [[0, 'asc']], // Default order by SL
-                columnDefs: [
-                    { className: 'text-center', targets: [6] } // Center-align the actions column
                 ]
             });
         });
-
-        function confirmDelete() {
-            return confirm("Are you sure you want to delete this order?");
-        }
     </script>
 </x-tap-layout>
